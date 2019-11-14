@@ -9,7 +9,8 @@ def call(body) {
 		stage('checkout'){
 			steps{
 				dir('source'){
-					git url:"${config.Git_url}",credentialsId:"${.config.Git_Credentials}",branch:"${config.Branch_Name}"
+					//git url:"${config.Git_url}",credentialsId:"${.config.Git_Credentials}",branch:"${config.Branch_Name}"
+					println cofig.Git_url
 				}
 			}//steps
 		}//stage
@@ -18,20 +19,18 @@ def call(body) {
 				script{
 					configFileprovider([configFile(fileId: 'FIMT_NEXUS_SETTINGS', variable: 'MAVEN_SETTINGS')]){
 						if (config.Maven_goal == 'Package')
-							sh "mvn -f source/pom.xml clean package -Dmaven.test.skip=true"
+							//sh "mvn -f source/pom.xml clean package -Dmaven.test.skip=true"
+						println config.Maven_goal
 						else if(config.Maven_goal == 'Release')
-							sh 'mvn -f source/pom.xml -s "${MAVEN_SETTINGS}" --batch-mode release:clean release:prepare release:perform -Dmaven.test.skip=true'
+							//sh 'mvn -f source/pom.xml -s "${MAVEN_SETTINGS}" --batch-mode release:clean release:prepare release:perform -Dmaven.test.skip=true'
+						println config.Maven_goal
 					}//config
 				}//script
 			}//steps
 		}//stage
 		stage ('Unittest & Publish'){
 			steps{
-				sh 'mvn -f source/pom.xml test -Dmaven.test.failure.ignore=false'
-				echo "Archiving Unit test results"
-				step([$class:'JunitResultAtchiver', testResults: '**/target/surefire-reports/".xml'])
-				echo "Publishing Unit test reports"
-				sh 'mvn -f source/pom.xml surefire-report:report'
+				sh "echo unittest"
 			}//steps
 		}//stage
 		stage ('code coverage'){
@@ -39,51 +38,26 @@ def call(body) {
 				script{
 					if (config.code_coverage_tool == 'jacoco' )
 					{
-						sh 'mvn -f source/pom.xml jacoco:report'
-						step([$class : 'JacocoPublisher',
-							//execPattern : '**/build/jacoco/*.exec',
-							//classPattern : '**/*.class',
-							//sourcePattern : '**/src/main/java',
-							//minimumBranchCoverage : '45', maximumBranchCoverage: '50',
-							//minimumClassCoverage : '45', maximumClassCoverage: '50',
-							//minimumComplexityCoverage : '45', maximumComplexityCoverage: '50',
-							//minimumInstructionCoverage: '45', maximumInstructionCoverage: '50',
-							minimumLineCoverage : '45', maximumLineCoverage: '50',
-							//minimumMethodCoverage : '45', maximumMethodCoverage: '50',
-							changeBuildstatus: true, deltaBranchCoverage: '1', deltaClassCoverage: '1', deltaComplexityCoverage: '1', deltaInstructionCoverage: '1', deltaLineCoverage: '1', deltaMethodCoverage: '1',
-						])
+						sh 'echo jacoco'
+						
 					}//jacoco ends
 					else if (config.code_coverage_tool == 'cobertura' )
 					{
-						sh 'mvn -f source/pom.xml -cobertura:report'
-						step([$class: 'CoberturaPublisher', autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'coverage.xml', maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false])
+						sh "echo cobertura"
 					}
 					else if (config.code_coverage_tool == 'Scoverage&cobertura' )
 					{
-						sh 'mvn -f source/pom.xml -DScoverage:report'
-						step([$class: 'CoberturaPublisher', autoUpdateHealth: true, autoUpdateStability: true, coberturaReportFile: 'coverage.xml', maxNumberOfBuilds: 0, onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false])
+						sh "echo Scoverage"
 					}
 				}//script
 			}//steps
 		}//stage
 		stage('sonar'){
 			steps{
-				withSonarQubeEnv('Enterprise Sonar PROD'){
-					sh 'mvn -f source/pom.xml -DSonarqube sonar:sonar'
-				}
+				sh "echo sonar"
 			}//steps
 		}//stage
-		stage('TriggerJob'){
-			steps{
-				dir('source'){
-					script{
-						def pom = readMavenPom file : 'pom.xml'
-						version=pom.version
-						build job: 'test', parameters: [string(name:'version',value:version)]
-					}
-				}
-			}//steps
-		}//stage
+		
 	}//stages
 	post{
 		always{
