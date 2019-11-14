@@ -17,14 +17,14 @@ def call(body) {
 		stage('Build Snapshot/Release'){
 			steps{
 				script{
-					configFileprovider([configFile(fileId: 'FIMT_NEXUS_SETTINGS', variable: 'MAVEN_SETTINGS')]){
+					//configFileprovider([configFile(fileId: 'FIMT_NEXUS_SETTINGS', variable: 'MAVEN_SETTINGS')]){
 						if (config.Maven_goal == 'Package')
 							//sh "mvn -f source/pom.xml clean package -Dmaven.test.skip=true"
 						println config.Maven_goal
 						else if(config.Maven_goal == 'Release')
 							//sh 'mvn -f source/pom.xml -s "${MAVEN_SETTINGS}" --batch-mode release:clean release:prepare release:perform -Dmaven.test.skip=true'
 						println config.Maven_goal
-					}//config
+					//}//config
 				}//script
 			}//steps
 		}//stage
@@ -61,7 +61,7 @@ def call(body) {
 	}//stages
 	post{
 		always{
-			cleanWS deleteDirs: false
+			cleanWs deleteDirs: false
 		}
 		failure{
 			emailext(
