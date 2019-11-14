@@ -10,7 +10,7 @@ def call(body) {
 			steps{
 				dir('source'){
 					//git url:"${config.Git_url}",credentialsId:"${.config.Git_Credentials}",branch:"${config.Branch_Name}"
-					println cofig.Git_url
+					println config.Git_url
 				}
 			}//steps
 		}//stage
