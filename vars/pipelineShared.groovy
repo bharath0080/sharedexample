@@ -66,7 +66,7 @@ def call(body) {
 		failure{
 			emailext(
 				body:"Please go to ${BUILD_URL} and verify the build",
-				subject:Failed Job '${JOB_NAME}' (${BUILD_NUMBER})
+				subject:Failed Job ${JOB_NAME} ${BUILD_NUMBER}
 				to: "${config.email}"
 			)
 		}
